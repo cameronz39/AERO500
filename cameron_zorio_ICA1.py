@@ -18,22 +18,21 @@ while i <= 20:
 
 plays = {0: "Rock", 1: "Paper", 2: "Scissors"}
 while 1:
-    user_input = input("type 'r', 'p', 's', to play rock, paper, scissors. type \"quit\" to quit\n")
-    match user_input:
-        case 'r':
-            user_input = 0
-            print("You played: Rock")
-        case 'p':
-            user_input = 1
-            print("You played Paper")
-        case 's':
-            user_input = 2
-            print("You played Scissors")
-        case "quit":
-            break
-        case _: 
-            print("Invalid input")
-            continue
+    user_input = input("type 'r', 'p', 's', to play rock, paper, scissors. type \"exit\" to quit\n")
+    if user_input == 'r':
+        user_input = 0
+        print("You played: Rock")
+    elif user_input == 'p':
+        user_input = 1
+        print("You played: Paper")
+    elif user_input == 's':
+        user_input = 2
+        print("You played: Scissors")
+    elif user_input == "exit":
+        break
+    else: 
+        print("Invalid input")
+        continue
 
     computer_input = random.randrange(0,3)
     print("Computer played: " + plays[computer_input])
@@ -42,6 +41,10 @@ while 1:
     match result:
         case 0:
             print("Tie game")
+        case 1 | -2:
+            print("You win")
+        case -1 | 2:
+            print("Computer wins")
             
     
 
