@@ -13,6 +13,7 @@ def monteCarloPi(maxIterations,tol):
     for i in range(1,maxIterations+1):
         rand_x = random.uniform(0, 1)
         rand_y = random.uniform(0, 1)
+        
         if rand_x**2 + rand_y**2 <= 1:
             inside_pts += 1
         
@@ -47,3 +48,26 @@ while err > 0.01:
 print(f"Estimated a value of pi of {estimate} after {trials} trials")
 
 # Task 2
+
+inside_pts = 0 # points inside the unit quarter circle
+last_estimate = 0
+current_estimate = 0
+maxIterations = 1000
+past_diffs = deque(maxlen=5) # queue of the 5 previous differences
+for i in range(1,maxIterations+1):
+    rand_x = random.uniform(-2, 3) # domain of integration
+    rand_y = random.uniform(0, 10) # enough to safely capture the range of the function on this domain
+    
+    if rand_x**2 + rand_y**2 <= (rand_x**3)*np.sin(rand_x):
+        inside_pts += 1
+    
+    # the ratio of points inside the unit quarter circle to total points should
+    # roughly equal the area of the unit quarter circle
+    current_estimate = 4*(inside_pts / i) 
+    if i != 0:
+        past_diffs.append(abs(current_estimate - last_estimate))   
+
+        # only break if we are certain the differences are settling
+        if len(past_diffs) == 5 and all(d < tol for d in past_diffs):
+            break
+    last_estimate = current_estimate
