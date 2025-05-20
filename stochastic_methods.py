@@ -4,6 +4,7 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import deque
+from scipy import stats
 
 def monteCarloPi(maxIterations,tol):
     inside_pts = 0 # points inside the unit quarter circle
@@ -132,11 +133,98 @@ for i in range(1,17):
 
 plt.grid()
 plt.scatter(sigma_P,sigma_rho)
+# plt.show() <---- uncomment for SUBMISSION
 
+# Task 4 ----------------------------------------------------------------
+
+unit_price = {
+    "yearly": [50, 52, 55, 57, 65],
+    "min": 50,
+    "max": 70,
+    "mode": 55
+}
+
+unit_sales = {
+    "yearly": [2000, 2200, 2700, 2500, 2800],
+    "min": 2000,
+    "max": 3000,
+    "mode": 2400
+}
+
+variable_costs = {
+    "yearly": [50000, 55000, 56000, 57000, 58000],
+    "min": 50000,
+    "max": 65000,
+    "mode": 55200
+}
+
+fixed_costs = {
+    "yearly": [10000, 12000, 15000, 16000, 17000],    
+    "min": 10000,
+    "max": 20000,
+    "mode": 14000
+}
+
+def draw_triangle_dis(data): # uniformly samples a grid until the result falls into the triangular PDF
+    a = data["min"]
+    b = data["max"]
+    c = data["mode"]
+
+    while True:
+        x = random.uniform(a,b)
+        y = random.uniform(0, 2/(b-a))
+
+        if a <= x and x <= c:
+            pdf_out = (2*(x-a)) / ((b-a)*(c-a))
+
+        elif c <= x and x <= b:
+            pdf_out = (2*(b-x))/((b-a)*(b-c))
+        else:
+            pdf_out = 0
+        
+        if y <= pdf_out:
+            return x
+        
+n = 10000
+earnings_samples = []
+var_cost_samples = []
+fixed_cost_samples  = []
+sales_samples = []
+for i in range(1,n):
+    price  = draw_triangle_dis(unit_price)
+    sales  = draw_triangle_dis(unit_sales)
+    var_c  = draw_triangle_dis(variable_costs)
+    fix_c  = draw_triangle_dis(fixed_costs)
+
+    earnings = price * sales - (var_c + fix_c)
+    earnings_samples.append(earnings)
+    var_cost_samples.append(var_c)
+    fixed_cost_samples.append(fix_c)
+    sales_samples.append(price * sales)
+
+
+plt.figure()
+plt.hist(earnings_samples, bins=70)   
+plt.xlabel("Earnings")
+plt.ylabel("Frequency")
+plt.title("Next‑Year Earnings Predictions using Monte Carlo Simulation")
+plt.grid(True)
+# plt.show()
+
+theta_hat_n = np.mean(earnings_samples) # samples mean
+sigma_hat_n = 0
+for sample in earnings_samples:
+    sigma_hat_n += (sample - theta_hat_n)**2
+sigma_hat_n = np.sqrt((sigma_hat_n)/(n-1))
+
+z = 1.96 # from text, for alpha = 0.05 
+
+L = theta_hat_n - z*(sigma_hat_n/np.sqrt(n))
+U = theta_hat_n + z*(sigma_hat_n/np.sqrt(n))
+
+print(f"95% confidence interval for next year's earnings: [{L:.0f}, {U:.0f}]")
+
+
+plt.figure()
+plt.scatter(var_cost_samples,earnings_samples)
 plt.show()
-
-print("Hello World!") 
-
-
-
-
