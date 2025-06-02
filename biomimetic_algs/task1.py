@@ -67,16 +67,16 @@ class Ant():
         self.r = next_node # current node = next node
 
     def travel(self,tau):
-        print(f"Starting at node: {self.r}")
+        # print(f"Starting at node: {self.r}")
         while self.M:
             self.choose_next_node(tau)
         self.tot_dist += self.d[self.path[-1],self.path[0]]
         # print(f"Completing loop now by travelling: {self.d[self.path[-1],self.path[0]]} back to {self.path[0]}")
         self.path.append(self.path[0])
         
-        print("Completed journey!")
-        print(self.path)
-        print(self.tot_dist)
+        # print("Completed journey!")
+        # print(self.path)
+        # print(self.tot_dist)
 
     def update_pheromone(self,tau):
         new_pheromone = np.zeros((5,5))
@@ -112,6 +112,9 @@ for i in range(num_iterations):
     distances[i,0] = ant_0.tot_dist
     distances[i,1] = ant_1.tot_dist
     distances[i,2] = ant_2.tot_dist
+
+    if i == num_iterations-1:
+        print(f"Best path found: {ant_0.path} with a distance of {ant_0.tot_dist}")
 
 plt.figure()
 plt.plot(distances[:,0],label='Ant 0')

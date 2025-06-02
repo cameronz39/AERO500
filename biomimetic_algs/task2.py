@@ -64,35 +64,24 @@ for s in range(S):
 g_x = particles[0].p_x
 g_y = particles[0].p_y
 
-max_iterations = 100
-plt.figure()
+max_iterations = 50
+
+pos_x_history = np.zeros((max_iterations, S))
+pos_y_history = np.zeros((max_iterations, S))
+
 for i in range(max_iterations):
     for j in range(len(particles)):
         if ackley(particles[j].p_x,particles[j].p_y) < ackley(g_x,g_y):
             g_x = particles[j].p_x
             g_y = particles[j].p_y
 
-    for particle in particles:
+    for j, particle in enumerate(particles):
         particle.update_vel(g_x,g_y)
         particle.update_pos()
 
-    if i % 20 == 0:
-        plt.clf()
-        plot_particles(particles)
-        plt.show()
+        pos_x_history[i,j] = particle.x
+        pos_y_history[i,j] = particle.y
         
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -102,12 +91,37 @@ y = np.linspace(-5, 5, 400)
 X, Y = np.meshgrid(x, y)
 Z = ackley(X, Y)
 
-# Plot the surface
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-surf = ax.plot_surface(X, Y, Z, cmap='viridis', edgecolor='none')
-ax.set_title('Ackley Function')
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-ax.set_zlabel('f(x, y)')
-# plt.show()
+fig, axs = plt.subplots(2,2, figsize = (8,6))
+
+fig.suptitle('Swarm positions over time')
+
+axs[0,0].contourf(X,Y,Z, levels=20, cmap = 'viridis')
+axs[0,0].scatter(pos_x_history[0,:],pos_y_history[0,:],color='darkorange',edgecolors='black')
+axs[0,0].set_xlim(-4,4)
+axs[0,0].set_ylim(-4,4)
+axs[0,0].set_title('1 iterations')
+axs[0,0].grid(True)
+
+axs[0,1].contourf(X,Y,Z, levels=20, cmap = 'viridis')
+axs[0,1].scatter(pos_x_history[10,:],pos_y_history[10,:],color='darkorange',edgecolors='black')
+axs[0,1].set_xlim(-4,4)
+axs[0,1].set_ylim(-4,4)
+axs[0,1].set_title('10 iterations')
+axs[0,1].grid(True)
+
+axs[1,0].contourf(X,Y,Z, levels=20, cmap = 'viridis')
+axs[1,0].scatter(pos_x_history[30,:],pos_y_history[30,:],color='darkorange',edgecolors='black')
+axs[1,0].set_xlim(-4,4)
+axs[1,0].set_ylim(-4,4)
+axs[1,0].set_title('30 iterations')
+axs[1,0].grid(True)
+
+axs[1,1].contourf(X,Y,Z, levels=20, cmap = 'viridis')
+axs[1,1].scatter(pos_x_history[-1,:],pos_y_history[-1,:],color='darkorange',edgecolors='black')
+axs[1,1].set_xlim(-4,4)
+axs[1,1].set_ylim(-4,4)
+axs[1,1].set_title('50 iterations')
+axs[1,1].grid(True)
+
+plt.show()
+
