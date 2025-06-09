@@ -1,4 +1,4 @@
-from sports_teams import BasketballTeam, SoccerTeam
+from ICAs.sports_teams import BasketballTeam, SoccerTeam
 
 warriors = BasketballTeam(
     "Golden State Warriors",
