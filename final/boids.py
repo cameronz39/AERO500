@@ -2,26 +2,35 @@ import numpy as np
 from pytransform3d import plot_utils
 from scipy.spatial.transform import Rotation as R
 from utils import projectSphere
+import random
 
 class Boid():
-    def __init__(self,cube_size):
-        self.pos = np.asarray([0.0,1,0.0])
-        self.vel = np.asarray([0.8, 0.2, 0.3])
+    def __init__(self,cube_size,col,maxSpeed = 1.2):
+        self.pos = np.asarray([random.uniform(-cube_size,cube_size),
+                               random.uniform(-cube_size,cube_size),
+                               random.uniform(-cube_size,cube_size)])
+        
+        self.vel = np.asarray([random.uniform(-maxSpeed,maxSpeed),
+                               random.uniform(-maxSpeed,maxSpeed),
+                               random.uniform(-maxSpeed,maxSpeed)])
         self.cube_size = cube_size
+        self.maxSpeed = maxSpeed
+
+        self.boid_col = col
 
     def step(self,ax):
-        detected, x_out, y_out, z_out = self.detectBounds(ax,detectRange=5,plotFlag=True)
+        detected, x_out, y_out, z_out, pts_detected = self.detectBounds(ax,detectRange=6,plotFlag=True)
         acc = np.asarray([0.0, 0.0, 0.0])
         if detected:
-            push = (np.asarray([-x_out,-y_out,-z_out]))*0.05
-            acc += push
+            boundary_push = pts_detected * (np.asarray([-x_out,-y_out,-z_out]))*0.0005
+            acc += boundary_push
+        elif np.linalg.norm(self.vel) > self.maxSpeed:
+            self.vel *= self.maxSpeed / np.linalg.norm(self.vel)
 
-
-        # ax.quiver(self.pos[0],self.pos[1],self.pos[2],-x_out,-y_out,-z_out)
-
+        self.vel += acc
 
         self.pos += self.vel
-        self.vel += acc
+
 
     def draw(self,ax):
         # ax.quiver(self.pos[0],self.pos[1],self.pos[2],self.vel[0],self.vel[1],self.vel[2])
@@ -44,10 +53,11 @@ class Boid():
         transform[:3,:3] = C
         transform[:3,3] = self.pos - self.vel
 
-        plot_utils.plot_cone(ax,height=2,radius=1,A2B=transform,wireframe=False,alpha=0.70,color='orange')
+        plot_utils.plot_cone(ax,height=2,radius=1,A2B=transform,wireframe=False,alpha=0.70,color=self.boid_col)
 
     def detectBounds(self,ax,plotFlag=False,detectRange=1):
-        x, y, z = projectSphere(10)
+        num_pts = 40
+        x, y, z = projectSphere(num_pts)
         x = x*detectRange + self.pos[0]
         y = y*detectRange + self.pos[1]
         z = z*detectRange + self.pos[2]
@@ -56,17 +66,19 @@ class Boid():
         mean_y = []
         mean_z = []
 
+        pts_detected = 0
         for i in range(len(x)):
             if abs(x[i]) > self.cube_size or abs(y[i]) > self.cube_size or abs(z[i]) > self.cube_size:
                 if plotFlag: ax.scatter(x[i],y[i],z[i],color='red')
                 mean_x.append(x[i])
                 mean_y.append(y[i])
                 mean_z.append(z[i])
+                pts_detected += 1
             else:
                 if plotFlag: ax.scatter(x[i],y[i],z[i],color='blue')
                 continue
 
         if mean_x:
-            return True, np.mean(mean_x), np.mean(mean_y), np.mean(mean_z)
+            return True, np.mean(mean_x), np.mean(mean_y), np.mean(mean_z), pts_detected
         else:
-            return False, None, None, None
+            return False, None, None, None, None
