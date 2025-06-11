@@ -1,14 +1,29 @@
 from utils import plotBounds
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, PillowWriter
-from boids import Boid
 from flock import Flock
+from boids import Boid
 import numpy as np
 
 
-CUBE_SIZE = 15
-NUM_FRAMES = 200  # Number of animation frames
-FLOCK_SIZE = 1
+CUBE_SIZE = 25
+NUM_FRAMES = 600 # Number of animation frames
+FLOCK_SIZE = 100
+NEIGHBOR_DIST = 15
+CROWD_DIST = 1.0
+
+SEP_WEIGHT = 0.5
+ALIGN_WEIGHT = 0.012
+COH_WEIGHT = 0.003
+HAWK_WEIGHT = 10.0
+# Initialize the hawk
+hawk = Boid(CUBE_SIZE,col='red',isHawk=True)
+
+# Initialize the flock
+flck = Flock(CUBE_SIZE,num_boids=FLOCK_SIZE,hawk=hawk,crowd_dist=CROWD_DIST,neigh_dist=NEIGHBOR_DIST,
+             sep_weight=SEP_WEIGHT,align_weight=ALIGN_WEIGHT,coh_weight=COH_WEIGHT,hawk_weight=HAWK_WEIGHT)
+
+
 
 def update(frame, flck, ax):
     ax.clear()
@@ -17,6 +32,8 @@ def update(frame, flck, ax):
      # Update boid position and draw
     flck.step(ax)
     flck.draw(ax)
+    hawk.step(ax,prey=flck.boids[0])
+    hawk.draw(ax)
 
     # Set consistent viewing angles and limits
     ax.set_xlim(-CUBE_SIZE, CUBE_SIZE)
@@ -24,8 +41,7 @@ def update(frame, flck, ax):
     ax.set_zlim(-CUBE_SIZE, CUBE_SIZE)
     return ax
 
-# Initialize the boid
-flck = Flock(CUBE_SIZE,num_boids=FLOCK_SIZE)
+
 
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')

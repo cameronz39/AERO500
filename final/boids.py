@@ -5,7 +5,7 @@ from utils import projectSphere
 import random
 
 class Boid():
-    def __init__(self,cube_size,col,maxSpeed = 1.2):
+    def __init__(self,cube_size,col,maxSpeed = 1.1,isHawk = False):
         self.pos = np.asarray([random.uniform(-cube_size,cube_size),
                                random.uniform(-cube_size,cube_size),
                                random.uniform(-cube_size,cube_size)])
@@ -17,18 +17,36 @@ class Boid():
         self.maxSpeed = maxSpeed
 
         self.boid_col = col
+        self.isHawk = isHawk
+        if isHawk: 
+            self.maxSpeed = 0.6
 
-    def step(self,ax):
-        detected, x_out, y_out, z_out, pts_detected = self.detectBounds(ax,detectRange=6,plotFlag=True)
-        acc = np.asarray([0.0, 0.0, 0.0])
+    def step(self,ax, steering=np.zeros(3), prey = None):
+        detected, x_out, y_out, z_out, pts_detected = self.detectBounds(ax,detectRange=6,plotFlag=False)
+        acc = np.zeros(3)
+        if not self.isHawk:
+            steering = np.asarray(steering).reshape(3,)
+            acc = steering.copy()
+
         if detected:
             boundary_push = pts_detected * (np.asarray([-x_out,-y_out,-z_out]))*0.0005
             acc += boundary_push
         elif np.linalg.norm(self.vel) > self.maxSpeed:
             self.vel *= self.maxSpeed / np.linalg.norm(self.vel)
 
-        self.vel += acc
+        if self.isHawk and prey is not None:
+            chase_vec = prey.pos - self.pos
+            dist = np.linalg.norm(chase_vec)
+            future_prey_pos = prey.pos + prey.vel * 2.5
 
+            desired = future_prey_pos - self.pos
+            desired = desired / np.linalg.norm(desired) * self.maxSpeed
+            pursue = desired - self.vel
+
+            miss_factor = 0.6
+            acc += miss_factor*pursue
+
+        self.vel += acc
         self.pos += self.vel
 
 
@@ -53,7 +71,13 @@ class Boid():
         transform[:3,:3] = C
         transform[:3,3] = self.pos - self.vel
 
-        plot_utils.plot_cone(ax,height=2,radius=1,A2B=transform,wireframe=False,alpha=0.70,color=self.boid_col)
+        h = 2
+        r = 1
+        if self.isHawk:
+            h = 3
+            r = 1.5
+
+        plot_utils.plot_cone(ax,height=h,radius=r,A2B=transform,wireframe=False,alpha=0.70,color=self.boid_col)
 
     def detectBounds(self,ax,plotFlag=False,detectRange=1):
         num_pts = 40
