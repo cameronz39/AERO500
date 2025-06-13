@@ -20,6 +20,8 @@ class Boid():
         self.isHawk = isHawk
         if isHawk: 
             self.maxSpeed = 0.6
+        
+        self.num_neighbors = []
 
     def step(self,ax, steering=np.zeros(3), prey = None):
         detected, x_out, y_out, z_out, pts_detected = self.detectBounds(ax,detectRange=6,plotFlag=False)
@@ -36,7 +38,6 @@ class Boid():
 
         if self.isHawk and prey is not None:
             chase_vec = prey.pos - self.pos
-            dist = np.linalg.norm(chase_vec)
             future_prey_pos = prey.pos + prey.vel * 2.5
 
             desired = future_prey_pos - self.pos
@@ -51,7 +52,6 @@ class Boid():
 
 
     def draw(self,ax):
-        # ax.quiver(self.pos[0],self.pos[1],self.pos[2],self.vel[0],self.vel[1],self.vel[2])
         world_dir = self.vel / np.linalg.norm(self.vel)
         body_dir = [0, 0, 1]
         axis = np.cross(body_dir,world_dir) 
@@ -70,6 +70,8 @@ class Boid():
         transform = np.eye(4)
         transform[:3,:3] = C
         transform[:3,3] = self.pos - self.vel
+
+        plot_utils.plot_cone(ax,height=2,radius=1,A2B=transform,wireframe=False,alpha=0.70,color=self.boid_col)
 
         h = 2
         r = 1

@@ -21,7 +21,7 @@ def plotBounds(ax,CUBE_SIZE,col='blue',thickness=0.1,scale=1.5):
 
     ax.set_xlim([-X_LIM*scale, X_LIM*scale]); ax.set_ylim([-Y_LIM*scale, Y_LIM*scale]); ax.set_zlim([-Z_LIM*scale, Z_LIM*scale])
     ax.set_box_aspect([1, 1, 1])                    # equal aspect ratio
-    ax.set_xlabel('X'); ax.set_ylabel('Y'); ax.set_zlabel('Z')
+    # ax.set_xlabel('X'); ax.set_ylabel('Y'); ax.set_zlabel('Z')
 
 
 def projectSphere(num_pts):

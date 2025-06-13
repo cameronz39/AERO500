@@ -42,13 +42,15 @@ class Flock():
             neigh_diff = diff[mask]
             neigh_dist = dist[mask]
 
+            boid.num_neighbors.append(np.size(neigh_pos))
+
             # evade the hawk
             evade_corr = np.zeros(3)
             if self.hawk is not None and not boid.isHawk:
                 delta = boid.pos - self.hawk.pos
                 dist     = np.linalg.norm(delta)
 
-                # inverse-square push, scaled so it peaks at the hawk’s surface
+                # inverse-square push
                 push = (1.0 / max(dist**2, 1e-6))
                 evade_corr = delta / max(dist, 1e-6) * push 
     
@@ -56,31 +58,30 @@ class Flock():
 
             # Seperation: avoid crowding -----------------------------------------------
             crowd_mask = neigh_dist < self.crowd_dist
-            sep_corr = np.zeros(3)
+            sep_correction = np.zeros(3)
             if np.any(crowd_mask):
                 crowd_diff = neigh_diff[crowd_mask] # now only considering very close boids
                 inv_sqr_term = 1.0 / (neigh_dist[crowd_mask]**2)[:,None]
-                sep_corr = np.sum(crowd_diff * inv_sqr_term,axis=0)
+                sep_correction = np.sum(crowd_diff * inv_sqr_term,axis=0)
 
             # Alignment: steer to align velocites with neighboring boid's velocities ----
             unit_headings = neigh_vel / np.linalg.norm(neigh_vel, axis=1, keepdims=True)
-            unit_headings = unit_headings[~np.isnan(unit_headings).any(axis=1)]
 
             if unit_headings.size:
                 mean_heading = unit_headings.mean(axis=0)
-                mean_heading /= np.linalg.norm(mean_heading)           # unit vector
-                desired_vel  = mean_heading * boid.maxSpeed            # keep them flying
-                align_corr   = desired_vel - boid.vel
+                mean_heading /= np.linalg.norm(mean_heading)           # normalize
+                desired_vel  = mean_heading * boid.maxSpeed            
+                align_correction   = desired_vel - boid.vel
             else:
-                align_corr = np.zeros(3)
+                align_correction = np.zeros(3)
 
             # Cohesion: stter toward center of mass -----------------------------------------
             center = np.mean(neigh_pos,axis=0)
-            coh_corr = center - boid.pos
+            coh_correction = center - boid.pos
 
-            steer = (self.sep_weight * sep_corr +
-                     self.align_weight * align_corr +
-                     self.coh_weight * coh_corr +
+            steer = (self.sep_weight * sep_correction +
+                     self.align_weight * align_correction +
+                     self.coh_weight * coh_correction +
                      self.hawk_weight * evade_corr)
             
             boid.step(ax,steer)

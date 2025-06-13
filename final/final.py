@@ -6,16 +6,23 @@ from boids import Boid
 import numpy as np
 
 
-CUBE_SIZE = 25
-NUM_FRAMES = 600 # Number of animation frames
-FLOCK_SIZE = 100
-NEIGHBOR_DIST = 15
+CUBE_SIZE = 30
+NUM_FRAMES = 300 # Number of animation frames
+FLOCK_SIZE = 150
+NEIGHBOR_DIST = 8.0
 CROWD_DIST = 1.0
 
-SEP_WEIGHT = 0.5
-ALIGN_WEIGHT = 0.012
-COH_WEIGHT = 0.003
-HAWK_WEIGHT = 10.0
+# SEP_WEIGHT = 0.5
+# ALIGN_WEIGHT = 0.012
+# COH_WEIGHT = 0.003
+# HAWK_WEIGHT = 10.0
+
+SEP_WEIGHT = 0.0
+ALIGN_WEIGHT = 0.0
+COH_WEIGHT = 0.0
+HAWK_WEIGHT = 0.0
+
+
 # Initialize the hawk
 hawk = Boid(CUBE_SIZE,col='red',isHawk=True)
 
@@ -29,7 +36,7 @@ def update(frame, flck, ax):
     ax.clear()
     plotBounds(ax, CUBE_SIZE, col='midnightblue', thickness=1)
 
-     # Update boid position and draw
+    # Update boid position and draw
     flck.step(ax)
     flck.draw(ax)
     hawk.step(ax,prey=flck.boids[0])
@@ -59,3 +66,10 @@ anim = FuncAnimation(
 gif_path = 'boid_animation.gif'
 anim.save(gif_path, writer=PillowWriter(fps=18))
 print(f"Saved animation to {gif_path}")
+
+plt.figure()
+plt.plot(flck.boids[30].num_neighbors)
+plt.grid()
+plt.xlabel('Simulation time step')
+plt.title('Number of neighboring boids')
+plt.show()
